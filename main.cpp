@@ -36,11 +36,6 @@ const uint8_t pokitto16x16_4bpp[] = {
 
 Pokitto::Core pokitto;
 
-#define ENTITY_RECT8 0
-#define ENTITY_RECT16 1
-#define ENTITY_BITMAP8 2
-#define ENTITY_BITMAP16 3
-
 #define BENCHMARK_RECT8 0
 #define BENCHMARK_RECT16 1
 #define BENCHMARK_CIRCLE8 2
@@ -55,7 +50,7 @@ typedef struct entity{
   uint8_t color;
 } entity;
 
-#define MAX_ENTITIES 1000
+#define MAX_ENTITIES 1500
 uint16_t num_entities = 0;
 uint16_t prev_num_entities = 0;
 uint16_t num_unchanged_frames = 0;
@@ -85,13 +80,13 @@ const uint8_t benchmark_sizes[NUM_BENCHMARKS] = {
   8
 };
 const uint16_t benchmark_thresholds[NUM_BENCHMARKS] = {
-  45-10,
-  65-20,
-  45-10,
-  65-20,
-  45-10,
-  65-20,
-  45-10,
+  35,
+  45,
+  35,
+  45,
+  35,
+  45,
+  35,
 };
 uint8_t current_benchmark;
 uint16_t benchmark_counter;
@@ -144,80 +139,6 @@ void benchmark_step(uint8_t entity_width, uint16_t slowdown_threshold){
     entities[num_entities].x = random()%(LCDWIDTH-entity_width);
     entities[num_entities].y = random()%(LCDHEIGHT-entity_width);
     entities[num_entities].color = random()%15+1;
-    num_entities++;
-  }
-}
-
-void benchmark_rect8_step(){
-  /* Wait to measure fps until after first 100 steps in benchmark showing benchmark name */
-  if( benchmark_counter < 100 ){
-    return;
-  }
-  if( pokitto.fps_counter < 30 ){
-    /* Record number of entities when fps drops below 30 */
-    benchmark_results[current_benchmark] = num_entities;
-    return;
-  }
-  /* If fps is above 30, keep adding entities (but more slowly as we approach 30 fps) */
-  if( num_entities < MAX_ENTITIES && (pokitto.fps_counter > 40 || (benchmark_counter % (40-pokitto.fps_counter)) == 0) ){
-    entities[num_entities].x = random()%(LCDWIDTH-8);
-    entities[num_entities].y = random()%(LCDHEIGHT-8);
-    entities[num_entities].color = random()%15+1;
-    num_entities++;
-  }
-}
-
-void benchmark_rect16_step(){
-  /* Wait to measure fps until after first 100 steps in benchmark showing benchmark name */
-  if( benchmark_counter < 100 ){
-    return;
-  }
-  if( pokitto.fps_counter < 30 ){
-    /* Record number of entities when fps drops below 30 */
-    benchmark_results[current_benchmark] = num_entities;
-    return;
-  }
-  /* If fps is above 30, keep adding entities (but more slowly as we approach 30 fps) */
-  if( num_entities < MAX_ENTITIES && (pokitto.fps_counter > 60 || (benchmark_counter % ((60-pokitto.fps_counter)*2)) == 0) ){
-    entities[num_entities].x = random()%(LCDWIDTH-16);
-    entities[num_entities].y = random()%(LCDHEIGHT-16);
-    entities[num_entities].color = random()%15+1;
-    num_entities++;
-  }
-}
-
-void benchmark_bitmap8_step(){
-  /* Wait to measure fps until after first 100 steps in benchmark showing benchmark name */
-  if( benchmark_counter < 100 ){
-    return;
-  }
-  if( pokitto.fps_counter < 30 ){
-    /* Record number of entities when fps drops below 30 */
-    benchmark_results[current_benchmark] = num_entities;
-    return;
-  }
-  /* If fps is above 30, keep adding entities (but more slowly as we approach 30 fps) */
-  if( num_entities < MAX_ENTITIES && (pokitto.fps_counter > 40 || (benchmark_counter % (40-pokitto.fps_counter)) == 0) ){
-    entities[num_entities].x = random()%(LCDWIDTH-8);
-    entities[num_entities].y = random()%(LCDHEIGHT-8);
-    num_entities++;
-  }
-}
-
-void benchmark_bitmap16_step(){
-  /* Wait to measure fps until after first 100 steps in benchmark showing benchmark name */
-  if( benchmark_counter < 100 ){
-    return;
-  }
-  if( pokitto.fps_counter < 30 ){
-    /* Record number of entities when fps drops below 30 */
-    benchmark_results[current_benchmark] = num_entities;
-    return;
-  }
-  /* If fps is above 30, keep adding entities (but more slowly as we approach 30 fps) */
-  if( num_entities < MAX_ENTITIES && (pokitto.fps_counter > 60 || (benchmark_counter % ((60-pokitto.fps_counter)*2)) == 0) ){
-    entities[num_entities].x = random()%(LCDWIDTH-16);
-    entities[num_entities].y = random()%(LCDHEIGHT-16);
     num_entities++;
   }
 }
@@ -293,34 +214,6 @@ void loop(){
   if( pokitto.update() ){
     benchmark_counter++;
     switch( current_benchmark ){
-      /*case BENCHMARK_RECT8:
-        benchmark_step(ENTITY_RECT8, 8, 40);
-        if( num_unchanged_frames > 300 ){
-          benchmark_reset();
-          current_benchmark = BENCHMARK_RECT16;
-        }
-        break;
-      case BENCHMARK_RECT16:
-        benchmark_step(ENTITY_RECT16, 16, 60);
-        if( num_unchanged_frames > 300 ){
-          benchmark_reset();
-          current_benchmark = BENCHMARK_BITMAP8;
-        }
-        break;
-      case BENCHMARK_BITMAP8:
-        benchmark_step(ENTITY_BITMAP8, 8, 35);
-        if( num_unchanged_frames > 300 ){
-          benchmark_reset();
-          current_benchmark = BENCHMARK_BITMAP16;
-        }
-        break;
-      case BENCHMARK_BITMAP16:
-        benchmark_step(ENTITY_BITMAP16, 16, 50);
-        if( num_unchanged_frames > 300 ){
-          benchmark_reset();
-          current_benchmark = BENCHMARK_RESULTS;
-        }
-        break;*/
       case BENCHMARK_RESULTS:
         benchmark_results_step();
         if( pokitto.buttons.pressed(BTN_A) ){
